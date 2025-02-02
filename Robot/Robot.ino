@@ -6,20 +6,17 @@
 class Claw {
   private:
     Servo servo;
-    int pin = 7;
+    const int pin = 7;
     int pos = 0;
   public:
 
     Claw() {
       servo.attach(pin);  // Set pin mode to output
-    }
+    };
 
     void close() {
-      for (pos = 5; pos < 70; pos += 1) {
-        Serial.print("two");
-        servo.write(pos);
-        delay(15);
-      }
+       servo.write(180);
+       delay(500);
     }
 
     void open() {
@@ -38,15 +35,16 @@ class ColorDetect {
    int s1 = 3; 
    int s2 = 4; 
    int s3 = 5;
+   int OE = 9;
    int curColor = 0; // 0 is black, 1 is red, 2 is blue and 3 is green
 
 
-    int redMin = 0; // Red minimum value
-    int redMax = 0; // Red maximum value
-    int greenMin = 0; // Green minimum value
-    int greenMax = 0; // Green maximum value
-    int blueMin = 0; // Blue minimum value
-    int blueMax = 0; // Blue maximum value
+    int redMin = 27; // Red minimum value
+    int redMax = 97; // Red maximum value
+    int greenMin = 48; // Green minimum value
+    int greenMax = 145; // Green maximum value
+    int blueMin = 54; // Blue minimum value
+    int blueMax = 132; // Blue maximum value
 
    int redPW = 0;
     int greenPW = 0;
@@ -57,7 +55,6 @@ class ColorDetect {
     int greenValue;
     int blueValue;
 
-   
 
   public : 
     ColorDetect() {
@@ -65,6 +62,7 @@ class ColorDetect {
     pinMode(s1, OUTPUT);
     pinMode(s2, OUTPUT);
     pinMode(s3, OUTPUT);
+    pinMode(OE, INPUT);
     pinMode(outPin, INPUT);  //out from sensor becomes input to arduino
 
 
@@ -72,7 +70,8 @@ class ColorDetect {
     // Variables for Color Pulse Width Measurements
     
     digitalWrite(s0, HIGH);
-    digitalWrite(s1, LOW);
+    digitalWrite(s1, HIGH);
+    digitalWrite(OE, LOW);
 
     
     }
@@ -91,7 +90,7 @@ class ColorDetect {
     }
 
     int getGreenPW() {
-      // Set sensor to read Red only
+      // Set sensor to read Green only
       digitalWrite(s2,HIGH);
       digitalWrite(s3,HIGH);
       // Define integer to represent Pulse Width
@@ -103,7 +102,7 @@ class ColorDetect {
     }
 
     int getBluePW() {
-      // Set sensor to read Red only
+      // Set sensor to read Blue only
       digitalWrite(s2,LOW);
       digitalWrite(s3,HIGH);
       // Define integer to represent Pulse Width
@@ -198,8 +197,8 @@ class Drivetrain {
     int leftMotorPin = 9;
     int in1 = 10; 
     int in2 = 11; 
-    int in3 = 12;
-    int in4 = 13;
+    int in3 = 13;
+    int in4 = 12;
     int circumfirence = 3.14159*6.35; //in cm
     // int Setpoint, Input, Output;
     // double Kp=2, Ki=5, Kd=1;
@@ -228,7 +227,7 @@ class Drivetrain {
     };
 
     void move(int speed) {
-      analogWrite(rightMotorPin, speed);  // Set motor 1 speed
+      analogWrite(rightMotorPin, speed+50);  // Set motor 1 speed
       analogWrite(leftMotorPin, speed);   // Set motor 2 speed
 
       digitalWrite(in1, HIGH);
@@ -238,13 +237,13 @@ class Drivetrain {
     };
 
     void moveBack(int speed) {
-      analogWrite(rightMotorPin, speed);  // Set motor 1 speed
+      analogWrite(rightMotorPin, speed+50);  // Set motor 1 speed
       analogWrite(leftMotorPin, speed);   // Set motor 2 speed
 
       digitalWrite(in1, LOW);
       digitalWrite(in2, HIGH);
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
+      digitalWrite(in3, LOW);
+      digitalWrite(in4, HIGH);
     };
 
     void timedMove(int speed, int time){
@@ -263,15 +262,31 @@ class Drivetrain {
 
       digitalWrite(in1, HIGH);
       digitalWrite(in2, LOW);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, HIGH);
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
     };
 
     void turn90(int direction){
       // positive is right, negative is left scalar value is speed
-      int rotateTime = 500;
       int speed = 200;
-      turn(-speed*direction, speed*direction);
+      int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
+      //6.5 is robot width
+      
+      analogWrite(rightMotorPin, speed);  // Set motor 1 speed
+      analogWrite(leftMotorPin, speed);   // Set motor 2 speed
+      if (direction>0){
+        digitalWrite(in1, LOW);
+        digitalWrite(in2, HIGH);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, LOW);
+      }else{
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, LOW);
+        digitalWrite(in3, LOW);
+        digitalWrite(in4, HIGH);
+      }
+      delay(rotateTime);
+      
     };
 
     // Stop the robot
@@ -306,7 +321,7 @@ class LED{
 //initailizing subsystems
 Claw claw;
 Drivetrain driveTrain;
-NewPing sonar(A0, A1, 16);
+NewPing sonar(A5, A4, 500);
 ColorDetect colorSensor;
 LED led;
 
@@ -346,7 +361,10 @@ void chal2(){
   int speed = 200;
   while (true){
     driveTrain.move(speed);
-    if (sonar.ping_cm()<=maxDistance){
+    int dis = sonar.ping_cm();
+    Serial.print(dis);
+    if (dis <=maxDistance){
+      driveTrain.stop();
       if (colorSensor.detect() == 0){
         driveTrain.stop();
       }else if (colorSensor.detect() == 1){
@@ -358,6 +376,7 @@ void chal2(){
         driveTrain.turn90(1);
       }
     }
+    delay(200);
   }
 };
 
@@ -445,7 +464,8 @@ void chal3(){
     if (colorIndex >= 5){
       break;
     }
-    if (sonar.ping_cm()>maxDistance){
+    int sensor = sonar.ping_cm();
+    if (sensor>maxDistance||sensor ==0){
       driveTrain.move(speed);
     }else{
       driveTrain.turn90(1);
@@ -475,13 +495,16 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //Serial.print("Distance: = ");
-  //Serial.println(sonar.ping_cm());
   //claw.open();
-  claw.close();
-  claw.open();
+  //claw.close();
+  //claw.open();
+  Serial.print("Color: ");
+  Serial.println(colorSensor.detect());
   //colorSensor.calibrate();
   //Serial.write("help");
-  driveTrain.move(200);
-  delay(100);
+  //driveTrain.turn90(1);
+  //delay(1000);
+  //driveTrain.turn90(-1);
+  //delay(1000);
+  //chal2();
 }
