@@ -6,14 +6,12 @@
 class Claw {
   private:
     Servo servo;
-    int pin = 7;
-    int pos;
+    int pin = A4;
+    int pos = 0;
   public:
 
     Claw() {
       servo.attach(pin);  // Set pin mode to output
-      pinMode(A0, OUTPUT);
-      digitalWrite(A0, HIGH);
     }
 
     void close() {
@@ -25,9 +23,10 @@ class Claw {
     }
 
     void open() {
-      for (pos = 70; pos > 5; pos -= 1) {
-        servo.write(pos);
-        delay(15);
+      for (pos = 0; pos <= 70; pos += 1) { // goes from 0 degrees to 180 degrees
+        // in steps of 1 degree
+        servo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(15);                       // waits 15ms for the servo to reach the position
       }
     }
 };
@@ -197,10 +196,10 @@ class Drivetrain {
   private:
     int rightMotorPin = 8;
     int leftMotorPin = 9;
-    int in1 = 2; 
-    int in2 = 3; 
-    int in3 = 4;
-    int in4 = 5;
+    int in1 = A2; 
+    int in2 = A3; 
+    int in3 = 10;
+    int in4 = 11;
     int circumfirence = 3.14159*6.35; //in cm
     // int Setpoint, Input, Output;
     // double Kp=2, Ki=5, Kd=1;
@@ -234,8 +233,8 @@ class Drivetrain {
 
       digitalWrite(in1, HIGH);
       digitalWrite(in2, LOW);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, HIGH);
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
     };
 
     void moveBack(int speed) {
@@ -307,7 +306,7 @@ class LED{
 //initailizing subsystems
 Claw claw;
 Drivetrain driveTrain;
-NewPing sonar(11, 10, 30);
+NewPing sonar(12, 13, 16);
 ColorDetect colorSensor;
 LED led;
 
@@ -343,7 +342,7 @@ void chal1(){
 }
 
 void chal2(){
-  int maxDistance = 30;
+  int maxDistance = 16;
   int speed = 200;
   while (true){
     driveTrain.move(speed);
@@ -483,6 +482,6 @@ void loop() {
   claw.open();
   //colorSensor.calibrate();
   //Serial.write("help");
-  //driveTrain.move(200);
+  driveTrain.move(200);
   delay(100);
 }
