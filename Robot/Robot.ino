@@ -1,29 +1,22 @@
 #include <Servo.h>
 #include <NewPing.h>
-#include <PID_v1.h>
-
 
 class Claw {
   private:
     Servo servo;
     const int pin = 7;
     int pos = 0;
+  
   public:
-
-    Claw() {
-      servo.attach(pin);  // Set pin mode to output
+    Claw(){
+      servo.attach(pin); 
     };
 
-    void close() {
-       servo.write(180);
-       delay(500);
-    }
-
-    void open() {
+    void open(){
       for (pos = 0; pos <= 70; pos += 1) { // goes from 0 degrees to 180 degrees
         // in steps of 1 degree
         servo.write(pos);              // tell servo to go to position in variable 'pos'
-        delay(15);                       // waits 15ms for the servo to reach the position
+        delay(15); 
       }
     }
 };
@@ -158,8 +151,14 @@ class ColorDetect {
       // Delay to stabilize sensor
       delay(200);
 
+      Serial.print("Red = ");
+      Serial.print(redValue);
+      Serial.print(" - Green = ");
+      Serial.print(greenValue);
+      Serial.print(" - Blue = ");
+      Serial.println(blueValue);
       int deadband = 20;
-      if (abs(redValue-blueValue) <= deadband && abs(redValue-greenValue) <= deadband && redPW >10){
+      if (abs(redValue-blueValue) <= deadband && abs(redValue-greenValue) <= deadband){
         return 0;
       }else if (redValue > blueValue && redValue > greenValue){
         return 1;
@@ -180,12 +179,9 @@ class ColorDetect {
       }
       return false;
     };
-
-
 };
 
-
-class Drivetrain {
+class Drivetrain{ 
   private:
     int rightMotorPin = 8;
     int leftMotorPin = 9;
@@ -198,10 +194,8 @@ class Drivetrain {
     // double Kp=2, Ki=5, Kd=1;
     // int PIN_INPUT;
     //PID drivePID(Input, Output, Setpoint, Kp, Ki, Kd, DIRECT);
-    
 
-  public :
-    // Constructor to initialize motor pins
+  public: 
     Drivetrain() {
     // Set motor pins as outputs
     pinMode(rightMotorPin, OUTPUT);
@@ -216,13 +210,14 @@ class Drivetrain {
     digitalWrite(in3, LOW);
     digitalWrite(in4, LOW);
     }
+
     double getDistance(int time, int speed){
       return speed/255 * 133 * 1/60 *3.14159*6.35 *time *1000;
     };
 
-    void move(int speed) {
-      analogWrite(rightMotorPin, speed+30);  // Set motor 1 speed
-      analogWrite(leftMotorPin, speed);   // Set motor 2 speed
+    void fwd(){
+      analogWrite(rightMotorPin, 250);  // Set motor 1 speed
+      analogWrite(leftMotorPin, 200);   
 
       digitalWrite(in1, HIGH);
       digitalWrite(in2, LOW);
@@ -230,91 +225,56 @@ class Drivetrain {
       digitalWrite(in4, LOW);
     };
 
-    void moveBack(int speed) {
-      analogWrite(rightMotorPin, speed+50);  // Set motor 1 speed
-      analogWrite(leftMotorPin, speed);   // Set motor 2 speed
+    void bkwd(){
+      analogWrite(rightMotorPin, 250);  // Set motor 1 speed
+      analogWrite(leftMotorPin, 200);   
 
       digitalWrite(in1, LOW);
       digitalWrite(in2, HIGH);
       digitalWrite(in3, LOW);
       digitalWrite(in4, HIGH);
-    };
+    }
 
     void timedMove(int speed, int time){
       if (speed<0){
-        moveBack(speed);
+        bkwd();
       }else{
-        move(speed);
+        fwd();
       }
       delay(time);
     };
 
-    // Turn the robot left
-    void turn(int Rspeed, int Lspeed) {
-      analogWrite(rightMotorPin, Rspeed);  // Set motor 1 speed
-      analogWrite(leftMotorPin, Lspeed);   // Set motor 2 speed
-
-      digitalWrite(in1, HIGH);
-      digitalWrite(in2, LOW);
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
-    };
-
-    void turn90(int direction){
-      // positive is right, negative is left scalar value is speed
-      int speed = 200;
-      int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
+    void rightTurn(){
+      //int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
       //6.5 is robot width
-      
-      analogWrite(rightMotorPin, direction*speed+50);  // Set motor 1 speed
-      analogWrite(leftMotorPin, direction*speed);   // Set motor 2 speed
-      if (direction>0){
-        digitalWrite(in1, LOW);
-        digitalWrite(in2, HIGH);
-        digitalWrite(in3, HIGH);
-        digitalWrite(in4, LOW);
-      }else{
-        digitalWrite(in1, HIGH);
-        digitalWrite(in2, LOW);
-        digitalWrite(in3, LOW);
-        digitalWrite(in4, HIGH);
-      }
-      //delay(1000);
-      
-    };
 
-    void turnRight(){
-      int speed = 200;
-      int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
-
-      analogWrite(rightMotorPin, speed-50);  // Set motor 1 speed
-      analogWrite(leftMotorPin, speed);
-
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, HIGH);
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
-      delay(rotateTime*100);
-
-    }
-    void turnLeft(){
-      int speed = 200;
-      int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
-
-
-      analogWrite(rightMotorPin,speed-50);  // Set motor 1 speed
-      analogWrite(leftMotorPin,speed);
+      analogWrite(rightMotorPin, 150);  // Set motor 1 speed
+      analogWrite(leftMotorPin, 250);   
 
       digitalWrite(in1, HIGH);
       digitalWrite(in2, LOW);
       digitalWrite(in3, LOW);
       digitalWrite(in4, HIGH);
-      delay(rotateTime*100);
 
+      delay(3000);
     }
 
-    // Stop the robot
-    void stop() {
+    void leftTurn(){
+      //int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
+      //6.5 is robot width
+
+      analogWrite(rightMotorPin, 250);  // Set motor 1 speed
+      analogWrite(leftMotorPin, 150);   
+
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, HIGH);
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
+
+      delay(3000);
+    }
+
+    void stop(){
       analogWrite(rightMotorPin, 0);  // Stop motor 1
       analogWrite(leftMotorPin, 0);   // Stop motor 2
 
@@ -350,75 +310,62 @@ ColorDetect colorSensor;
 LED led;
 
 // commands start here
-void chal1(){
-  int foundRing = false;
-  int speed = 200;
-  while (!foundRing){
-    driveTrain.turnRight();
+void chall1(){
+  bool foundRing = false;
+  int ring = 1; 
+  int timer = 0;
+
+  while(!foundRing){
+    driveTrain.rightTurn();
     foundRing = colorSensor.colorChanged();
-  }; // looks for the begining of the ring
-  driveTrain.turnRight(); // turns to face the center of the circle
-  delay(50);
-  int ring = 1;
-  while (true){
-    driveTrain.move(speed);
+  };
+  driveTrain.rightTurn();
+
+  while(ring < 5){
+    driveTrain.fwd();
     if (colorSensor.colorChanged()){
       ring+=1;
     }
-    if (ring == 5){
-      break;//keeps driving forward until it reaches the fifth color
-    }
   }
-  int timer = 0;
-  while (true){
+
+  while(true){
     timer+=1;
-    driveTrain.moveBack(speed);
-    if (colorSensor.colorChanged()){
-      break;// keeps going until 
+    driveTrain.fwd();
+    if(colorSensor.colorChanged()){
+      break;
     }
   }
-  driveTrain.timedMove(-speed, timer/2); // move it backwards in half the amount of time to hit the center
-  
+  driveTrain.bkwd();
+  delay(timer/2);
 }
 
-void chal2(){
-  int maxDistance = 10;
-  int speed = 200;
-  
-  driveTrain.move(speed);
-  delay(1000);
-  while (true){
+void Chall2(){
+  int senseDistance = 10;
+
+  while(true){
+    driveTrain.fwd();
     int dis = sonar.ping_cm();
-    delay(20);
-    Serial.println(dis);
-    if (dis <=maxDistance){
-      // driveTrain.moveBack(1);
-      // delay(1);
-      int color = colorSensor.detect();
-      Serial.println(color);
-      if ( color == 0){
+    Serial.print(dis);
+    if (dis < senseDistance){
+      driveTrain.stop();
+
+       if (colorSensor.detect() == 0){ //Black
         driveTrain.stop();
-      }else if (color == 1){
-        driveTrain.turnRight();
-        delay(5000);
-        //driveTrain.move(speed);
-        
-      }else if (color == 3){
-        driveTrain.turnLeft();
-        delay(3000);
-        //driveTrain.move(speed);
-      }else if (color == 2){
-        driveTrain.turnRight();
-        delay(3000);
-        //driveTrain.move(speed);
+       }
+       else if (colorSensor.detect() == 1){ //Red
+        driveTrain.rightTurn();
+        driveTrain.rightTurn();
+      }
+      else if (colorSensor.detect() == 2){ //Blue
+        driveTrain.leftTurn();
+      }
+      else if (colorSensor.detect() == 3){ //Green
+        driveTrain.rightTurn();
       }
     }
-    driveTrain.move(speed);
-    
-    
+    delay(200);
   }
 };
-
 
 int checkDiff(int pos[], bool x_axis, int color){
   int timer = 0;
@@ -430,23 +377,23 @@ int checkDiff(int pos[], bool x_axis, int color){
       distance = abs(c-pos[1])*9.1;
       if (x_axis){
         if (c>pos[1]){
-          driveTrain.turn90(1);
+          driveTrain.rightTurn();
         }else{
-          driveTrain.turn90(-1);
+          driveTrain.leftTurn();
         }
       }else{
         if (c<pos[1]){
-          driveTrain.turn90(1);
-          driveTrain.turn90(1);
+          driveTrain.rightTurn();
+          driveTrain.rightTurn();
         }
       }
           
       while (true){
-        driveTrain.move(speed);
+        driveTrain.fwd();
         timer+=1;
         if (colorSensor.colorChanged() || sonar.ping_cm()<=maxDistance){ 
-          driveTrain.turn90(1);
-          driveTrain.turn90(1);
+          driveTrain.rightTurn();
+          driveTrain.rightTurn();
           return timer;
         }
 
@@ -460,22 +407,22 @@ int checkDiff(int pos[], bool x_axis, int color){
       distance = abs(c-pos[0])*9.1;
       if (!x_axis){
         if (c>pos[0]){
-          driveTrain.turn90(1);
+          driveTrain.leftTurn();
         }else{
-          driveTrain.turn90(-1);
+          driveTrain.leftTurn();
         }
       }else{
         if (c<pos[0]){
-          driveTrain.turn90(1);
-          driveTrain.turn90(1);
+          driveTrain.rightTurn();
+          driveTrain.rightTurn();
         }
       }
       while (true){
-        driveTrain.move(speed);
+        driveTrain.fwd();
         timer+=1;
         if (colorSensor.colorChanged() || sonar.ping_cm()<=maxDistance){ 
-          driveTrain.turn90(1);
-          driveTrain.turn90(1);
+          driveTrain.rightTurn();
+          driveTrain.rightTurn();
           return timer;
         }
 
@@ -505,9 +452,9 @@ void chal3(){
     }
     int sensor = sonar.ping_cm();
     if (sensor>maxDistance||sensor ==0){
-      driveTrain.move(speed);
+      driveTrain.fwd();
     }else{
-      driveTrain.turn90(1);
+      driveTrain.rightTurn();
       if (x_axis == true){
         x_axis = false;
       }else{
@@ -529,7 +476,6 @@ void chal3(){
 void setup() {
   Serial.begin(9600);
   Serial.println("help");
-  delay(3000);
 }
 
 void loop() {
@@ -545,6 +491,7 @@ void loop() {
   //delay(1000);
   //driveTrain.turn90(-1);
   //delay(1000);
-  chal2();
-  //chal1();
+  chall1();
+  //Chall2();
+  //chall3();
 }
