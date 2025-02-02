@@ -6,7 +6,7 @@
 class Claw {
   private:
     Servo servo;
-    int pin = A4;
+    int pin = 7;
     int pos = 0;
   public:
 
@@ -33,11 +33,11 @@ class Claw {
 
 class ColorDetect {
   private:
-   int outPin = 8; 
-   int s0 = A2;
-   int s1 = 7; 
-   int s2 = 10; 
-   int s3 = 1;
+   int outPin = 6; 
+   int s0 = 2;
+   int s1 = 3; 
+   int s2 = 4; 
+   int s3 = 5;
    int curColor = 0; // 0 is black, 1 is red, 2 is blue and 3 is green
 
 
@@ -196,10 +196,10 @@ class Drivetrain {
   private:
     int rightMotorPin = 8;
     int leftMotorPin = 9;
-    int in1 = A2; 
-    int in2 = A3; 
-    int in3 = 10;
-    int in4 = 11;
+    int in1 = 10; 
+    int in2 = 11; 
+    int in3 = 12;
+    int in4 = 13;
     int circumfirence = 3.14159*6.35; //in cm
     // int Setpoint, Input, Output;
     // double Kp=2, Ki=5, Kd=1;
@@ -288,7 +288,7 @@ class Drivetrain {
 
 class LED{
   private:
-    int pin = A5;
+    int pin = 9;
     int delayT = 100;
   public:
     LED(){
@@ -306,7 +306,7 @@ class LED{
 //initailizing subsystems
 Claw claw;
 Drivetrain driveTrain;
-NewPing sonar(12, 13, 16);
+NewPing sonar(A0, A1, 16);
 ColorDetect colorSensor;
 LED led;
 
