@@ -337,6 +337,10 @@ void chall1(){
   }
   driveTrain.bkwd();
   delay(timer/2);
+
+  while(true){
+    driveTrain.stop();
+  }
 }
 
 void Chall2(){
