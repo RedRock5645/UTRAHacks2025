@@ -158,14 +158,8 @@ class ColorDetect {
       // Delay to stabilize sensor
       delay(200);
 
-      Serial.print("Red = ");
-      Serial.print(redValue);
-      Serial.print(" - Green = ");
-      Serial.print(greenValue);
-      Serial.print(" - Blue = ");
-      Serial.println(blueValue);
       int deadband = 20;
-      if (abs(redValue-blueValue) <= deadband && abs(redValue-greenValue) <= deadband){
+      if (abs(redValue-blueValue) <= deadband && abs(redValue-greenValue) <= deadband && redPW >10){
         return 0;
       }else if (redValue > blueValue && redValue > greenValue){
         return 1;
@@ -227,7 +221,7 @@ class Drivetrain {
     };
 
     void move(int speed) {
-      analogWrite(rightMotorPin, speed+50);  // Set motor 1 speed
+      analogWrite(rightMotorPin, speed+30);  // Set motor 1 speed
       analogWrite(leftMotorPin, speed);   // Set motor 2 speed
 
       digitalWrite(in1, HIGH);
@@ -272,8 +266,8 @@ class Drivetrain {
       int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
       //6.5 is robot width
       
-      analogWrite(rightMotorPin, speed);  // Set motor 1 speed
-      analogWrite(leftMotorPin, speed);   // Set motor 2 speed
+      analogWrite(rightMotorPin, direction*speed+50);  // Set motor 1 speed
+      analogWrite(leftMotorPin, direction*speed);   // Set motor 2 speed
       if (direction>0){
         digitalWrite(in1, LOW);
         digitalWrite(in2, HIGH);
@@ -285,9 +279,39 @@ class Drivetrain {
         digitalWrite(in3, LOW);
         digitalWrite(in4, HIGH);
       }
-      delay(rotateTime);
+      //delay(1000);
       
     };
+
+    void turnRight(){
+      int speed = 200;
+      int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
+
+      analogWrite(rightMotorPin, speed-50);  // Set motor 1 speed
+      analogWrite(leftMotorPin, speed);
+
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, HIGH);
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
+      delay(rotateTime*100);
+
+    }
+    void turnLeft(){
+      int speed = 200;
+      int rotateTime = (6.5/4)/(speed/255 * 133 *1/60*6.35);
+
+
+      analogWrite(rightMotorPin,speed-50);  // Set motor 1 speed
+      analogWrite(leftMotorPin,speed);
+
+      digitalWrite(in1, HIGH);
+      digitalWrite(in2, LOW);
+      digitalWrite(in3, LOW);
+      digitalWrite(in4, HIGH);
+      delay(rotateTime*100);
+
+    }
 
     // Stop the robot
     void stop() {
@@ -330,10 +354,11 @@ void chal1(){
   int foundRing = false;
   int speed = 200;
   while (!foundRing){
-    driveTrain.turn(-speed, speed);
+    driveTrain.turnRight();
     foundRing = colorSensor.colorChanged();
   }; // looks for the begining of the ring
-  driveTrain.turn90(speed); // turns to face the center of the circle
+  driveTrain.turnRight(); // turns to face the center of the circle
+  delay(50);
   int ring = 1;
   while (true){
     driveTrain.move(speed);
@@ -347,7 +372,7 @@ void chal1(){
   int timer = 0;
   while (true){
     timer+=1;
-    driveTrain.move(speed);
+    driveTrain.moveBack(speed);
     if (colorSensor.colorChanged()){
       break;// keeps going until 
     }
@@ -357,26 +382,40 @@ void chal1(){
 }
 
 void chal2(){
-  int maxDistance = 16;
+  int maxDistance = 10;
   int speed = 200;
+  
+  driveTrain.move(speed);
+  delay(1000);
   while (true){
-    driveTrain.move(speed);
     int dis = sonar.ping_cm();
-    Serial.print(dis);
+    delay(20);
+    Serial.println(dis);
     if (dis <=maxDistance){
-      driveTrain.stop();
-      if (colorSensor.detect() == 0){
+      // driveTrain.moveBack(1);
+      // delay(1);
+      int color = colorSensor.detect();
+      Serial.println(color);
+      if ( color == 0){
         driveTrain.stop();
-      }else if (colorSensor.detect() == 1){
-        driveTrain.turn90(1);
-        driveTrain.turn90(1);
-      }else if (colorSensor.detect() == 2){
-        driveTrain.turn90(-1);
-      }else if (colorSensor.detect() == 3){
-        driveTrain.turn90(1);
+      }else if (color == 1){
+        driveTrain.turnRight();
+        delay(5000);
+        //driveTrain.move(speed);
+        
+      }else if (color == 3){
+        driveTrain.turnLeft();
+        delay(3000);
+        //driveTrain.move(speed);
+      }else if (color == 2){
+        driveTrain.turnRight();
+        delay(3000);
+        //driveTrain.move(speed);
       }
     }
-    delay(200);
+    driveTrain.move(speed);
+    
+    
   }
 };
 
@@ -498,13 +537,14 @@ void loop() {
   //claw.open();
   //claw.close();
   //claw.open();
-  Serial.print("Color: ");
-  Serial.println(colorSensor.detect());
+  // Serial.print("Color: ");
+  // Serial.println(colorSensor.detect());
   //colorSensor.calibrate();
   //Serial.write("help");
   //driveTrain.turn90(1);
   //delay(1000);
   //driveTrain.turn90(-1);
   //delay(1000);
-  //chal2();
+  chal2();
+  //chal1();
 }
